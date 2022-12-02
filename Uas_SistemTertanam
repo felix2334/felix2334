@@ -1,0 +1,85 @@
+#define BLYNK_TEMPLATE_ID "TMPLZyhM8j0c"
+#define BLYNK_DEVICE_NAME "tugas akhir ST"
+#define BLYNK_AUTH_TOKEN "RFb1_OR9ly5UMbE0g9f-lvKZJ22KO6e5"
+
+#define BLYNK_PRINT Serial
+
+#include <WiFi.h>
+#include <WiFiClient.h>
+#include <BlynkSimpleEsp32.h>
+
+char auth[] = BLYNK_AUTH_TOKEN;
+char ssid[] = "untan";
+char pass[] = "";
+
+//deklarasi variabel
+int merah1 = 18;
+int merah2 = 19;
+int buzzer = 22;
+int api = 35;
+int asapA0 = 34;
+int sensorThres = 4000;
+
+void setup() {
+  Serial.begin(115200);
+  pinMode(merah1,OUTPUT);
+  pinMode(merah2,OUTPUT);
+  pinMode(buzzer,OUTPUT);
+  pinMode(api,INPUT);
+  pinMode(asapA0,INPUT);
+  
+  //  KONEKSI KE WIFI
+  Serial.print("Connecting to ");
+  Serial.println(ssid);
+
+  WiFi.begin(ssid, pass);
+  int wifi_ctr = 0;
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");  
+  }
+  
+  Blynk.begin(auth, ssid, pass);
+}
+void loop() {
+  Blynk.run();
+  int sensorAsap = analogRead(asapA0);
+  int sensorApi = analogRead(api);
+  Serial.print("pin asap= ");
+  Serial.println(sensorAsap);
+  Serial.println(sensorApi);
+  
+  //jika mendeteksi asap
+  if (sensorAsap < 800)
+  {
+    digitalWrite(merah1,HIGH);
+    digitalWrite(merah2,LOW);
+    digitalWrite(buzzer,HIGH);
+  }
+  //jika mendeteksi api besar
+  else if (sensorApi < 800)
+  {
+    digitalWrite(merah1,LOW);
+    digitalWrite(merah2,HIGH);
+    digitalWrite(buzzer,HIGH);
+  }
+  //jika mendeteksi asap dan api
+  else if (sensorApi < 800 and sensorAsap < 800)
+  {
+    digitalWrite(merah1,HIGH);
+    digitalWrite(merah2,HIGH);
+    digitalWrite(buzzer,HIGH);
+  }
+  //jika dalam keadaan normal
+  else
+  {
+    digitalWrite(merah1,LOW);
+    digitalWrite(merah2,LOW);
+    digitalWrite(buzzer,LOW);
+  }
+  
+  Blynk.virtualWrite(V0,sensorApi);
+  Blynk.virtualWrite(V1,sensorAsap);
+  
+  delay(1000);
+}
